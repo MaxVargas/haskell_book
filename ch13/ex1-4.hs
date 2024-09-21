@@ -49,17 +49,44 @@ item = P (\inp -> case inp of
                       []     -> []
                       (x:xs) -> [(x,xs)])
 
+sat :: (Char -> Bool) -> Parser Char
+sat p = do x <- item
+           if p x then return x else empty
+
+
+char :: Char -> Parser Char
+char x = sat (==x)
+
 string :: String -> Parser String
 string [] = return []
 string (x:xs) = do char x
                    string xs
                    return (x:xs)
 
+nextline :: Parser ()
+nextline = do x <- item
+              if '\n'==x then return () else nextline
+
+-- this method does not include the \n on the return
 comment :: Parser ()
-comment = do x <- item
-             if x == '-' then
-                do y <- item
-                if y == '-' then
-                   return
-                else return [x,y]
-             else return [x]
+comment = do x <- string "--"
+             nextline
+
+{- alternate definition with many
+ - this method *includes* the \n on the return
+comment' = do x <- string "--"
+              many (sat (/= '\n'))
+              return ()
+-}
+
+-- 2) This problem is drawing trees. It's.... drawn on paper
+-- 3) same here
+-- 4) This problem deals with the grammar simplification on p.187-189
+--    The final simplification has a difference of:
+--    e := t+e | t              e := t(+e | id)
+--    t := f*t | f      vs      t := f(*t | id)
+--    The left side forces a recalculation of terms if we ever land in the second case
+--        and a recalculation of factors whenever we land in the second case too
+--    The right side keeps track of terms we've already calculated
+--        so that we don't have to recalculate them. Kind of like a tree
+--        based memoization.

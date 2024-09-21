@@ -205,7 +205,7 @@ getCh =
      return x
 
 box :: [String]
-box = ["+----------------",
+box = ["+---------------+",
        "|               |",
        "+---+---+---+---+",
        "| q | c | d | = |",
@@ -261,7 +261,12 @@ delete xs = calc (init xs)
 
 evalu :: String -> IO ()
 evalu xs = case parse expr xs of
-               [(n,[])] -> calc (show n)
+               [(n,[])] -> do showbox
+                              calc (show n)
+               [(n,vs)] -> do writeat (x, 1) "v"
+                              calc xs
+                 where
+                   x = 4 + length(xs) - length(vs)
                _        -> do beep
                               calc xs
 
